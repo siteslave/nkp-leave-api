@@ -2,6 +2,8 @@
 
 ## Installation
 
+Node.js version 8.x or latest
+
 ```
 npm i typescript -g
 npm i ts-node -g
