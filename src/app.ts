@@ -10,13 +10,19 @@ import * as bodyParser from 'body-parser';
 import * as ejs from 'ejs';
 import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
+import * as cors from 'cors';
 
 import rateLimit = require("express-rate-limit");
 import helmet = require('helmet');
+import knex = require('knex');
 
 import { Router, Request, Response, NextFunction } from 'express';
 
+import { JwtModel } from './models/jwt';
 import indexRoute from './routes/index';
+import { MySqlConnectionConfig } from 'knex';
+
+const jwtModel = new JwtModel();
 
 const router: Router = Router();
 const app: express.Application = express();
@@ -47,6 +53,62 @@ app.use(limiter);
 // limit for only route
 // app.use("/api/", limiter);
 
+app.use(cors());
+
+const connection: MySqlConnectionConfig = {
+  host: process.env.DB_HOST,
+  port: +process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  multipleStatements: true,
+  debug: true
+}
+
+const db = knex({
+  client: 'mysql',
+  connection: connection,
+  pool: {
+    min: 0,
+    max: 100,
+    afterCreate: (conn: any, done: any) => {
+      conn.query('SET NAMES utf8', (err: any) => {
+        done(err, conn);
+      });
+    }
+  },
+});
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.db = db;
+  next();
+});
+
+const auth = async (req: Request, res: Response, next: NextFunction) => {
+  var token: string = null;
+
+  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.query && req.query.token) {
+    token = req.query.token;
+  } else {
+    token = req.body.token;
+  }
+
+  try {
+    var decoded = await jwtModel.verify(token);
+    req.decoded = decoded;
+    next();
+  } catch (error) {
+    return res.send({
+      ok: false,
+      error: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED),
+      code: HttpStatus.UNAUTHORIZED
+    }); 
+  }
+}
+
+// app.use('/api', auth, indexRoute);
 app.use('/', indexRoute);
 
 //error handlers
