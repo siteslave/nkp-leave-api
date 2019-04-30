@@ -10,7 +10,7 @@ npm i ts-node -g
 ```
 
 ```
-git clone https://github.com/siteslave/ts-express myApi
+git clone https://github.com/siteslave/ts-node-express myApi
 cd myApi
 npm i
 ```
@@ -18,7 +18,7 @@ npm i
 ## Running
 
 ```
-cp .env.example.txt .env
+cp config.txt config
 npm start
 ```
 

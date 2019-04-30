@@ -1,4 +1,8 @@
+/// <reference path="../typings.d.ts" />
 import * as path from 'path';
+// configure environment
+require('dotenv').config({ path: path.join(__dirname, '../config') });
+
 import * as favicon from 'serve-favicon';
 import * as logger from 'morgan';
 import * as cookieParser from 'cookie-parser';
@@ -6,11 +10,14 @@ import * as bodyParser from 'body-parser';
 import * as ejs from 'ejs';
 import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
+
+import rateLimit = require("express-rate-limit");
+import helmet = require('helmet');
+
 import { Router, Request, Response, NextFunction } from 'express';
 
 import indexRoute from './routes/index';
 
-// Assign router to the express.Router() instance
 const router: Router = Router();
 const app: express.Application = express();
 
@@ -26,6 +33,19 @@ app.use(bodyParser.json({ limit: '5mb' }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
+
+app.use(helmet());
+app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }))
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+ 
+// limit for all route
+app.use(limiter);
+// limit for only route
+// app.use("/api/", limiter);
 
 app.use('/', indexRoute);
 
