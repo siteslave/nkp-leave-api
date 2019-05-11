@@ -4,15 +4,15 @@ export class JwtModel {
 
   private secretKey = process.env.SECRET_KEY;
 
-  sign(playload: any) {
-    let token = jwt.sign(playload, this.secretKey, {
+  sign(payload: any) {
+    let token = jwt.sign(payload, this.secretKey, {
       expiresIn: '1d'
     });
     return token;
   }
 
-  signApiKey(playload: any) {
-    let token = jwt.sign(playload, this.secretKey, {
+  signApiKey(payload: any) {
+    let token = jwt.sign(payload, this.secretKey, {
       expiresIn: '1y'
     });
     return token;

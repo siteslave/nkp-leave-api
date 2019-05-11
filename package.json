@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "npx nodemon",
-    "build": "npx tsc"
+    "build": "npx gulp"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -35,7 +35,14 @@
     "@types/morgan": "^1.7.35",
     "@types/node": "^11.13.8",
     "@types/serve-favicon": "^2.2.30",
-    "nodemon": "^1.18.11",
+    "gulp": "^4.0.2",
+    "gulp-clean": "^0.4.0",
+    "gulp-cli": "^2.2.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-typescript": "^5.0.1",
+    "gulp-uglify": "^3.0.2",
+    "nodemon": "^1.19.0",
+    "readable-stream": "^3.3.0",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
   }

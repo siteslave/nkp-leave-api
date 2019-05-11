@@ -1,8 +1,5 @@
 /// <reference path="../typings.d.ts" />
 import * as path from 'path';
-// configure environment
-require('dotenv').config({ path: path.join(__dirname, '../config') });
-
 import * as favicon from 'serve-favicon';
 import * as logger from 'morgan';
 import * as cookieParser from 'cookie-parser';
@@ -17,6 +14,9 @@ import helmet = require('helmet');
 import knex = require('knex');
 
 import { Router, Request, Response, NextFunction } from 'express';
+
+// configure environment
+require('dotenv').config({ path: path.join(__dirname, '../config') });
 
 import { JwtModel } from './models/jwt';
 import indexRoute from './routes/index';

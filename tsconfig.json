@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "strict": false,
     "removeComments": true,
     "sourceMap": true,
-    "rootDir": "src",
+    "sourceRoot": "src",
     "outDir": "dist",
+    "noImplicitAny": false,
+    "module": "commonjs",
+    "target": "es5",
+    "experimentalDecorators": true,
     "typeRoots": [
       "node_modules/@types"
     ]
