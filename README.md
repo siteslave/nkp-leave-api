@@ -20,7 +20,10 @@ npm i
 
 ```
 cp config.txt config
+npm run build
 npm start
+# or
+npm start:watch
 ```
 
 open browser and go to http://localhost:3000

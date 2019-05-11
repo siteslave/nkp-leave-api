@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "npx nodemon",
+    "start:watch": "npx nodemon",
+    "start": "npm run build && node ./dist/bin/www.js",
     "build": "npx gulp"
   },
   "dependencies": {
