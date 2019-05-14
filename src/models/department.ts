@@ -2,10 +2,17 @@ import * as knex from 'knex';
 
 export class DepartmentModel {
 
-  read(db: knex) {
+  read(db: knex, limit: number, offset: number) {
     return db('departments')
       // .where('is_enabled', 'Y')
-      .orderBy('department_name', 'ASC');
+      .orderBy('department_name', 'ASC')
+      .limit(limit)
+      .offset(offset);
+  }
+
+  getTotal(db: knex) {
+    return db('departments')
+      .select(db.raw('count(*) as total'));
   }
 
   create(db: knex, data: any) {
