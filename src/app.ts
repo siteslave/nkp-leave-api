@@ -20,6 +20,8 @@ require('dotenv').config({ path: path.join(__dirname, '../config') });
 
 import { JwtModel } from './models/jwt';
 import indexRoute from './routes/index';
+import departmentRoute from './routes/departments';
+
 import { MySqlConnectionConfig } from 'knex';
 
 const jwtModel = new JwtModel();
@@ -41,7 +43,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(helmet());
-app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }))
+app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -63,7 +65,7 @@ const connection: MySqlConnectionConfig = {
   password: process.env.DB_PASSWORD,
   multipleStatements: true,
   debug: true
-}
+};
 
 const db = knex({
   client: 'mysql',
@@ -109,6 +111,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 // app.use('/api', auth, indexRoute);
+app.use('/departments', departmentRoute);
 app.use('/', indexRoute);
 
 //error handlers
