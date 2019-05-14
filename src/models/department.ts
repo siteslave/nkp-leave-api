@@ -4,7 +4,7 @@ export class DepartmentModel {
 
   read(db: knex) {
     return db('departments')
-      .where('is_enabled', 'Y')
+      // .where('is_enabled', 'Y')
       .orderBy('department_name', 'ASC');
   }
 
