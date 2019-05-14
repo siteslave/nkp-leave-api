@@ -108,7 +108,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
       code: HttpStatus.UNAUTHORIZED
     }); 
   }
-}
+};
 
 // app.use('/api', auth, indexRoute);
 app.use('/departments', departmentRoute);

@@ -3,8 +3,7 @@
 import * as express from 'express';
 import { Router, Request, Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
-// import model
-// import { TestModel } from "../models/test";
+
 import { JwtModel } from "../models/jwt";
 
 // const testModel = new TestModel();
