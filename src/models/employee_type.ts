@@ -2,9 +2,16 @@ import * as knex from 'knex';
 
 export class EmployeeTypeModel {
 
-  read(db: knex) {
+  read(db: knex, limit: number, offset: number) {
     return db('employee_types')
-      .orderBy('employee_type_name', 'ASC');
+      .orderBy('employee_type_name', 'ASC')
+      .limit(limit)
+      .offset(offset);
+  }
+
+  getTotal(db: knex) {
+    return db('employee_types')
+      .select(db.raw('count(*) as total'));
   }
 
   create(db: knex, data: any) {

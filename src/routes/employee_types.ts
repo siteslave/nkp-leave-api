@@ -11,8 +11,14 @@ const router: Router = Router();
 // READ
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const rs: any = await employeeTypeModel.read(req.db);
-    res.send({ok: true, rows: rs});
+    const limit = +req.query.limit || 2; // ?limit=20
+    const offset = +req.query.offset || 0; // ?offset=0
+
+    const rs: any = await employeeTypeModel.read(req.db, limit, offset);
+    const rsTotal: any = await employeeTypeModel.getTotal(req.db);
+    const total = rsTotal[0].total;
+
+    res.send({ok: true, rows: rs, total: total});
   } catch(e) {
     console.log(e);
     res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
