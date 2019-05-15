@@ -23,6 +23,7 @@ import indexRoute from './routes/index';
 import departmentRoute from './routes/departments';
 import employeeTypeRoute from './routes/employee_types';
 import userRoute from './routes/users';
+import employeeRoute from './routes/employees';
 
 import { MySqlConnectionConfig } from 'knex';
 
@@ -116,6 +117,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
 app.use('/employee-types', employeeTypeRoute);
 app.use('/departments', departmentRoute);
 app.use('/users', userRoute);
+app.use('/employees', employeeRoute);
 app.use('/', indexRoute);
 
 //error handlers
