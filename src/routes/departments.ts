@@ -14,8 +14,10 @@ router.get('/', async (req: Request, res: Response) => {
     const limit = +req.query.limit || 2; // ?limit=20
     const offset = +req.query.offset || 0; // ?offset=0
 
-    const rs: any = await departmentModel.read(req.db, limit, offset);
-    const rsTotal: any = await departmentModel.getTotal(req.db);
+    const query = req.query.query || null;
+
+    const rs: any = await departmentModel.read(req.db, query, limit, offset);
+    const rsTotal: any = await departmentModel.getTotal(req.db, query);
     const total = rsTotal[0].total;
 
     res.send({ok: true, rows: rs, total: total});
