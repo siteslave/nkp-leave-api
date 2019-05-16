@@ -28,18 +28,27 @@ router.post('/', async (req: Request, res: Response) => {
 
     if (userType === 'ADMIN') {
       rs = await loginModel.adminLogin(req.db, username, encPassword);
+
     } else {
       rs = await loginModel.userLogin(req.db, username, encPassword);
     }
 
     if (rs.length) {
       const data = rs[0];
-      const payload = {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        user_type: data.user_type,
-        user_id: data.user_id
-      };
+      let payload: any = {};
+
+      payload.first_name = data.first_name;
+      payload.last_name = data.last_name;
+      payload.period_id = data.period_id;
+      payload.period_name = data.period_name;
+
+      if (userType === 'ADMIN') {
+        payload.user_type = data.user_type;
+        payload.user_id = data.user_id;
+      } else {
+        payload.user_type = 'USER';
+        payload.employee_id = data.employee_id;
+      }
 
       console.log(payload);
 

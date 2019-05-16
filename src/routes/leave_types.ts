@@ -2,9 +2,9 @@
 
 import { Request, Response, Router } from 'express';
 
-import { DepartmentModel } from "../models/department";
+import { LeaveTypeModel } from "../models/leave_type";
 
-const departmentModel = new DepartmentModel();
+const leaveTypeModel = new LeaveTypeModel();
 
 const router: Router = Router();
 
@@ -16,8 +16,8 @@ router.get('/', async (req: Request, res: Response) => {
 
     const query = req.query.query || null;
 
-    const rs: any = await departmentModel.read(req.db, query, limit, offset);
-    const rsTotal: any = await departmentModel.getTotal(req.db, query);
+    const rs: any = await leaveTypeModel.read(req.db, query, limit, offset);
+    const rsTotal: any = await leaveTypeModel.getTotal(req.db, query);
     const total = rsTotal[0].total;
 
     res.send({ok: true, rows: rs, total: total});
@@ -29,16 +29,14 @@ router.get('/', async (req: Request, res: Response) => {
 
 // CREATE
 router.post('/', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
-  const isEnabled = req.body.isEnabled;
+  const leaveTypeName = req.body.leaveTypeName;
 
-  if (departmentName) {
+  if (leaveTypeName) {
     try {
       const data: any = {};
-      data.department_name = departmentName;
-      data.is_enabled = isEnabled;
+      data.leave_type_name = leaveTypeName;
 
-      await departmentModel.create(req.db, data);
+      await leaveTypeModel.create(req.db, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -50,19 +48,17 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-router.put('/:departmentId', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
-  const isEnabled = req.body.isEnabled;
+router.put('/:leaveTypeId', async (req: Request, res: Response) => {
+  const leaveTypeName = req.body.leaveTypeName;
 
-  const departmentId = req.params.departmentId;
+  const leaveTypeId = req.params.leaveTypeId;
 
-  if (departmentName && departmentId) {
+  if (leaveTypeName && leaveTypeId) {
     try {
       const data: any = {};
-      data.department_name = departmentName;
-      data.is_enabled = isEnabled;
+      data.leave_type_name = leaveTypeName;
 
-      await departmentModel.update(req.db, departmentId, data);
+      await leaveTypeModel.update(req.db, leaveTypeId, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -74,13 +70,13 @@ router.put('/:departmentId', async (req: Request, res: Response) => {
 });
 
 // DELETE
-router.delete('/:departmentId', async (req: Request, res: Response) => {
+router.delete('/:leaveTypeId', async (req: Request, res: Response) => {
 
-  const departmentId = req.params.departmentId;
+  const leaveTypeId = req.params.leaveTypeId;
 
-  if (departmentId) {
+  if (leaveTypeId) {
     try {
-      await departmentModel.delete(req.db, departmentId);
+      await leaveTypeModel.delete(req.db, leaveTypeId);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
