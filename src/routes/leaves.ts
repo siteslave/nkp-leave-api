@@ -15,9 +15,10 @@ router.get('/', async (req: Request, res: Response) => {
     const offset = +req.query.offset || 0; // ?offset=0
 
     const status = req.query.status || null;
+    const employeeId = req.decoded.employee_id;
 
-    const rs: any = await leaveModel.read(req.db, status, limit, offset);
-    const rsTotal: any = await leaveModel.getTotal(req.db, status);
+    const rs: any = await leaveModel.read(req.db, employeeId, status, limit, offset);
+    const rsTotal: any = await leaveModel.getTotal(req.db, employeeId, status);
     const total = rsTotal[0].total;
 
     res.send({ok: true, rows: rs, total: total});
