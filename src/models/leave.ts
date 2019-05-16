@@ -30,7 +30,7 @@ export class LeaveModel {
     }
 
     if (employeeId) {
-      sql.where('l.employee_id', employeeId);
+      sql.where('employee_id', employeeId);
     }
 
     return sql;
