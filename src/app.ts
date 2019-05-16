@@ -25,6 +25,7 @@ import employeeTypeRoute from './routes/employee_types';
 import userRoute from './routes/users';
 import employeeRoute from './routes/employees';
 import subDepartmentRoute from './routes/sub_departments';
+import loginRoute from './routes/login';
 
 import { MySqlConnectionConfig } from 'knex';
 
@@ -120,6 +121,7 @@ app.use('/departments', departmentRoute);
 app.use('/users', userRoute);
 app.use('/employees', employeeRoute);
 app.use('/sub-departments', subDepartmentRoute);
+app.use('/login', loginRoute);
 app.use('/', indexRoute);
 
 //error handlers

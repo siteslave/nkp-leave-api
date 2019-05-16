@@ -14,7 +14,7 @@ export class EmployeeModel {
     let sql = db('employees as e')
       .select(
         'e.employee_id', 'e.first_name', 'e.last_name',
-        'e.employee_type_id', 'e.is_enabled', 'e.username',
+        'e.employee_type_id', 'e.is_enabled', 'e.username', 'e.sub_department_id', 'e.department_id',
         'et.employee_type_name', 'd.department_name', 'sd.sub_department_name'
       )
       .leftJoin('employee_types as et', 'et.employee_type_id', 'e.employee_type_id')
