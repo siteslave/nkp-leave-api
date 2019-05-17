@@ -1,23 +1,25 @@
 /// <reference path="../../typings.d.ts" />
+import * as crypto from "crypto";
 
 import { Request, Response, Router } from 'express';
 
-import { DepartmentModel } from "../models/department";
+import { UserModel } from "../models/user";
 
-const departmentModel = new DepartmentModel();
+const userModel = new UserModel();
 
 const router: Router = Router();
 
 // READ
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const limit = +req.query.limit || 20; // ?limit=20
+    const limit = +req.query.limit || 2; // ?limit=20
     const offset = +req.query.offset || 0; // ?offset=0
 
     const query = req.query.query || null;
+    const userType = req.query.userType || null;
 
-    const rs: any = await departmentModel.read(req.db, query, limit, offset);
-    const rsTotal: any = await departmentModel.getTotal(req.db, query);
+    const rs: any = await userModel.read(req.db, query, userType, limit, offset);
+    const rsTotal: any = await userModel.getTotal(req.db, query, userType);
     const total = rsTotal[0].total;
 
     res.send({ok: true, rows: rs, total: total});
@@ -29,16 +31,25 @@ router.get('/', async (req: Request, res: Response) => {
 
 // CREATE
 router.post('/', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
+  const username = req.body.username;
+  const password = req.body.password;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const userType = req.body.userType;
   const isEnabled = req.body.isEnabled;
 
-  if (departmentName) {
+  if (username && password && firstName && lastName && userType) {
     try {
+      const encPassword = crypto.createHash('md5').update(password).digest('hex');
       const data: any = {};
-      data.department_name = departmentName;
+      data.username = username;
+      data.password = encPassword;
+      data.first_name = firstName;
+      data.last_name = lastName;
+      data.user_type = userType;
       data.is_enabled = isEnabled;
 
-      await departmentModel.create(req.db, data);
+      await userModel.create(req.db, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -50,19 +61,23 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-router.put('/:departmentId', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
+router.put('/:userId', async (req: Request, res: Response) => {
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const userType = req.body.userType;
   const isEnabled = req.body.isEnabled;
 
-  const departmentId = req.params.departmentId;
+  const userId = req.params.userId;
 
-  if (departmentName && departmentId) {
+  if (firstName && lastName && userType && userId) {
     try {
       const data: any = {};
-      data.department_name = departmentName;
+      data.first_name = firstName;
+      data.last_name = lastName;
+      data.user_type = userType;
       data.is_enabled = isEnabled;
-
-      await departmentModel.update(req.db, departmentId, data);
+      
+      await userModel.update(req.db, userId, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -74,13 +89,13 @@ router.put('/:departmentId', async (req: Request, res: Response) => {
 });
 
 // DELETE
-router.delete('/:departmentId', async (req: Request, res: Response) => {
+router.delete('/:userId', async (req: Request, res: Response) => {
 
-  const departmentId = req.params.departmentId;
+  const userId = req.params.userId;
 
-  if (departmentId) {
+  if (userId) {
     try {
-      await departmentModel.delete(req.db, departmentId);
+      await userModel.delete(req.db, userId);
       res.send({ok: true});
     } catch(e) {
       console.log(e);

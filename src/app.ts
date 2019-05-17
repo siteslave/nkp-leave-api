@@ -1,29 +1,33 @@
 /// <reference path="../typings.d.ts" />
 import * as path from 'path';
-import * as favicon from 'serve-favicon';
 import * as logger from 'morgan';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 import * as ejs from 'ejs';
 import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import * as cors from 'cors';
 
-import rateLimit = require("express-rate-limit");
-import helmet = require('helmet');
-import knex = require('knex');
-
-import { Router, Request, Response, NextFunction } from 'express';
-
 // configure environment
-require('dotenv').config({ path: path.join(__dirname, '../config') });
+require('dotenv').config({path: path.join(__dirname, '../config')});
 
 import { JwtModel } from './models/jwt';
 import indexRoute from './routes/index';
 import departmentRoute from './routes/departments';
 import employeeTypeRoute from './routes/employee_types';
+import userRoute from './routes/users';
+import employeeRoute from './routes/employees';
+import subDepartmentRoute from './routes/sub_departments';
+import loginRoute from './routes/login';
+import leaveTypeRoute from './routes/leave_types';
+import leaveRoute from './routes/leaves';
+import serviceUserRoute from './routes/services/users';
 
 import { MySqlConnectionConfig } from 'knex';
+import rateLimit = require("express-rate-limit");
+import helmet = require('helmet');
+import knex = require('knex');
 
 const jwtModel = new JwtModel();
 
@@ -38,19 +42,19 @@ app.set('view engine', 'ejs');
 //uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname,'../public','favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json({ limit: '5mb' }));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '5mb'}));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(helmet());
-app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }));
+app.use(helmet.hidePoweredBy({setTo: 'PHP 4.2.0'}));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
 });
- 
+
 // limit for all route
 app.use(limiter);
 // limit for only route
@@ -107,13 +111,32 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
       ok: false,
       error: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED),
       code: HttpStatus.UNAUTHORIZED
-    }); 
+    });
+  }
+};
+
+const userAuth = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.decoded.user_type === 'USER') {
+    next();
+  } else {
+    return res.send({
+      ok: false,
+      error: 'ACCESS DENIED',
+      code: 401
+    });
   }
 };
 
 // app.use('/api', auth, indexRoute);
 app.use('/employee-types', employeeTypeRoute);
 app.use('/departments', departmentRoute);
+app.use('/users', userRoute);
+app.use('/employees', employeeRoute);
+app.use('/sub-departments', subDepartmentRoute);
+app.use('/leave-types', leaveTypeRoute);
+app.use('/leaves', auth, leaveRoute);
+app.use('/services/users', auth, userAuth, serviceUserRoute);
+app.use('/login', loginRoute);
 app.use('/', indexRoute);
 
 //error handlers

@@ -2,22 +2,23 @@
 
 import { Request, Response, Router } from 'express';
 
-import { DepartmentModel } from "../models/department";
+import { SubDepartmentModel } from "../models/sub_department";
 
-const departmentModel = new DepartmentModel();
+const subDepartmentModel = new SubDepartmentModel();
 
 const router: Router = Router();
 
 // READ
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const limit = +req.query.limit || 20; // ?limit=20
+    const limit = +req.query.limit || 2; // ?limit=20
     const offset = +req.query.offset || 0; // ?offset=0
 
     const query = req.query.query || null;
+    const departmentId = req.query.departmentId || null;
 
-    const rs: any = await departmentModel.read(req.db, query, limit, offset);
-    const rsTotal: any = await departmentModel.getTotal(req.db, query);
+    const rs: any = await subDepartmentModel.read(req.db, query, departmentId, limit, offset);
+    const rsTotal: any = await subDepartmentModel.getTotal(req.db, query, departmentId);
     const total = rsTotal[0].total;
 
     res.send({ok: true, rows: rs, total: total});
@@ -29,16 +30,16 @@ router.get('/', async (req: Request, res: Response) => {
 
 // CREATE
 router.post('/', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
-  const isEnabled = req.body.isEnabled;
+  const subDepartmentName = req.body.subDepartmentName;
+  const departmentId = req.body.departmentId;
 
-  if (departmentName) {
+  if (subDepartmentName && departmentId) {
     try {
       const data: any = {};
-      data.department_name = departmentName;
-      data.is_enabled = isEnabled;
+      data.sub_department_name = subDepartmentName;
+      data.department_id = departmentId;
 
-      await departmentModel.create(req.db, data);
+      await subDepartmentModel.create(req.db, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -50,19 +51,19 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-router.put('/:departmentId', async (req: Request, res: Response) => {
-  const departmentName = req.body.departmentName;
-  const isEnabled = req.body.isEnabled;
+router.put('/:subDepartmentId', async (req: Request, res: Response) => {
+  const subDepartmentName = req.body.subDepartmentName;
+  const departmentId = req.body.departmentId;
 
-  const departmentId = req.params.departmentId;
+  const subDepartmentId = req.params.subDepartmentId;
 
-  if (departmentName && departmentId) {
+  if (subDepartmentName && subDepartmentId) {
     try {
       const data: any = {};
-      data.department_name = departmentName;
-      data.is_enabled = isEnabled;
+      data.sub_department_name = subDepartmentName;
+      data.department_id = departmentId;
 
-      await departmentModel.update(req.db, departmentId, data);
+      await subDepartmentModel.update(req.db, subDepartmentId, data);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
@@ -74,13 +75,13 @@ router.put('/:departmentId', async (req: Request, res: Response) => {
 });
 
 // DELETE
-router.delete('/:departmentId', async (req: Request, res: Response) => {
+router.delete('/:subDepartmentId', async (req: Request, res: Response) => {
 
-  const departmentId = req.params.departmentId;
+  const subDepartmentId = req.params.subDepartmentId;
 
-  if (departmentId) {
+  if (subDepartmentId) {
     try {
-      await departmentModel.delete(req.db, departmentId);
+      await subDepartmentModel.delete(req.db, subDepartmentId);
       res.send({ok: true});
     } catch(e) {
       console.log(e);
