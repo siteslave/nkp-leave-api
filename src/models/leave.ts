@@ -41,16 +41,26 @@ export class LeaveModel {
       .insert(data);
   }
 
-  update(db: knex, leaveId: any, data: any) {
-    return db('leaves')
-      .where('leave_id', leaveId)
-      .update(data);
+  update(db: knex, leaveId: any, data: any, employeeId: any = null) {
+    var sql = db('leaves')
+      .where('leave_id', leaveId);
+
+    if (employeeId) {
+      sql.where('employee_id', employeeId);
+    }
+
+    return sql.update(data);
   }
 
-  delete(db: knex, leaveId: any) {
-    return db('leaves')
-      .where('leave_id', leaveId)
-      .del();
+  delete(db: knex, leaveId: any, employeeId: any = null) {
+    var sql = db('leaves')
+      .where('leave_id', leaveId);
+
+    if (employeeId) {
+      sql.where('employee_id', employeeId);
+    }
+
+    return sql.del();
   }
 
 }

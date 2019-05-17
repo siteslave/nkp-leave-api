@@ -50,9 +50,7 @@ router.post('/', async (req: Request, res: Response) => {
         payload.employee_id = data.employee_id;
       }
 
-      console.log(payload);
-
-      const token = jwtModel.sign(payload);
+      const token = await jwtModel.sign(payload);
       res.send({ok: true, token: token});
     } else {
       res.send({ok: false, error: 'ชื่อผู้ใช้งาน หรือ รหัสผ่าน ไม่ถูกต้อง'});

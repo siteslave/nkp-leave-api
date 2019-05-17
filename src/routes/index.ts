@@ -1,10 +1,18 @@
 /// <reference path="../../typings.d.ts" />
 
 import * as express from 'express';
+import * as ejs from 'ejs';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as fse from 'fs-extra';
+import * as pdf from 'html-pdf';
+import * as rimraf from 'rimraf';
+
 import { Router, Request, Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
 
 import { JwtModel } from "../models/jwt";
+import moment = require("moment");
 
 // const testModel = new TestModel();
 const jwtModel = new JwtModel();
@@ -17,16 +25,38 @@ router.get('/', async (req: Request, res: Response) => {
   res.send({ ok: true, message: 'Welcome to RESTful api server!', code: HttpStatus.OK });
 });
 
-router.get('/verify', async (req: Request, res: Response) => {
-  var token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoZWxsbyI6Inh4eCIsImlhdCI6MTU1NjYwODQ4MiwiZXhwIjoxNTU2Njk0ODgyfQ.2iUfTQoyMhleJAGdmyXAgd82i1bPxeUNH8r96O-Cbys`;
-  try {
-    var decoded = await jwtModel.verify(token);
-    console.log(decoded);
-    // console.log(message);
-    res.send({ ok: true, payload: decoded });
-  } catch (error) {
-    res.send({ ok: false, error: error.message, code: HttpStatus.INTERNAL_SERVER_ERROR });
-  }
+router.get('/pdf', async (req: Request, res: Response) => {
+  const exportPath = path.join(__dirname, '../../output');
+
+  fse.ensureDirSync(exportPath);
+
+  const fileName = `${moment().format('x')}.pdf`;
+  const pdfPath = path.join(exportPath, fileName);
+
+  const _ejsPath = path.join(__dirname, '../../templates/test.ejs');
+
+  var contents = fs.readFileSync(_ejsPath, 'utf8');
+  var html = ejs.render(contents, {name: 'Satit Rianpit'});
+
+  pdf.create(html).toFile(pdfPath, function (err, data) {
+    if (err) {
+      console.log(err);
+      res.send({ok: false, error: err});
+    } else {
+      fs.readFile(pdfPath , function (err, data){
+        if (err) {
+          res.send({ok: false, error: err});
+        } else {
+
+          rimraf.sync(pdfPath);
+
+          res.contentType("application/pdf");
+          res.send(data);
+        }
+      });
+    }
+  });
+
 });
 
 export default router;
