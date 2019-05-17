@@ -23,6 +23,7 @@ import loginRoute from './routes/login';
 import leaveTypeRoute from './routes/leave_types';
 import leaveRoute from './routes/leaves';
 import serviceUserRoute from './routes/services/users';
+import serviceManagerRoute from './routes/services/manager';
 
 import { MySqlConnectionConfig } from 'knex';
 import rateLimit = require("express-rate-limit");
@@ -127,6 +128,18 @@ const userAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const managerAuth = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.decoded.user_type === 'MANAGER') {
+    next();
+  } else {
+    return res.send({
+      ok: false,
+      error: 'ACCESS DENIED',
+      code: 401
+    });
+  }
+};
+
 // app.use('/api', auth, indexRoute);
 app.use('/employee-types', employeeTypeRoute);
 app.use('/departments', departmentRoute);
@@ -136,6 +149,7 @@ app.use('/sub-departments', subDepartmentRoute);
 app.use('/leave-types', leaveTypeRoute);
 app.use('/leaves', auth, leaveRoute);
 app.use('/services/users', auth, userAuth, serviceUserRoute);
+app.use('/services/manager', auth, managerAuth, serviceManagerRoute);
 app.use('/login', loginRoute);
 app.use('/', indexRoute);
 
