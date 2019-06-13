@@ -32,10 +32,10 @@ router.get('/', async (req: Request, res: Response) => {
     const rsTotal: any = await employeeModel.getTotal(req.db, query, employeeTypeId, departmentId, subDepartmentId);
     const total = rsTotal[0].total;
 
-    res.send({ok: true, rows: rs, total: total});
-  } catch(e) {
+    res.send({ ok: true, rows: rs, total: total });
+  } catch (e) {
     console.log(e);
-    res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+    res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
   }
 });
 
@@ -48,9 +48,12 @@ router.post('/', async (req: Request, res: Response) => {
   const employeeTypeId = req.body.employeeTypeId;
   const departmentId = req.body.departmentId;
   const subDepartmentId = req.body.subDepartmentId;
+  const positionId = req.body.positionId;
+
   const isEnabled = req.body.isEnabled;
 
-  if (username && password && firstName && lastName && employeeTypeId && departmentId && subDepartmentId) {
+  if (username && password && firstName && lastName &&
+    employeeTypeId && departmentId && subDepartmentId && positionId) {
     try {
       const encPassword = crypto.createHash('md5').update(password).digest('hex');
       const data: any = {};
@@ -61,16 +64,17 @@ router.post('/', async (req: Request, res: Response) => {
       data.employee_type_id = employeeTypeId;
       data.department_id = departmentId;
       data.sub_department_id = subDepartmentId;
+      data.position_id = positionId;
       data.is_enabled = isEnabled;
 
       await employeeModel.create(req.db, data);
-      res.send({ok: true});
-    } catch(e) {
+      res.send({ ok: true });
+    } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 
@@ -81,11 +85,14 @@ router.put('/:employeeId', async (req: Request, res: Response) => {
   const employeeTypeId = req.body.employeeTypeId;
   const departmentId = req.body.departmentId;
   const subDepartmentId = req.body.subDepartmentId;
+  const positionId = req.body.positionId;
+
   const isEnabled = req.body.isEnabled;
 
   const employeeId = req.params.employeeId;
 
-  if (firstName && lastName && employeeTypeId && employeeId && departmentId && subDepartmentId) {
+  if (firstName && lastName && employeeTypeId && employeeId &&
+    departmentId && subDepartmentId && positionId) {
     try {
       const data: any = {};
       data.first_name = firstName;
@@ -93,16 +100,18 @@ router.put('/:employeeId', async (req: Request, res: Response) => {
       data.employee_type_id = employeeTypeId;
       data.department_id = departmentId;
       data.sub_department_id = subDepartmentId;
+      data.position_id = positionId;
+
       data.is_enabled = isEnabled;
-      
+
       await employeeModel.update(req.db, employeeId, data);
-      res.send({ok: true});
-    } catch(e) {
+      res.send({ ok: true });
+    } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 
@@ -114,13 +123,13 @@ router.delete('/:employeeId', async (req: Request, res: Response) => {
   if (employeeId) {
     try {
       await employeeModel.delete(req.db, employeeId);
-      res.send({ok: true});
-    } catch(e) {
+      res.send({ ok: true });
+    } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 

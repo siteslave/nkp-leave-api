@@ -15,14 +15,16 @@ export class EmployeeModel {
       .select(
         'e.employee_id', 'e.first_name', 'e.last_name',
         'e.employee_type_id', 'e.is_enabled', 'e.username', 'e.sub_department_id', 'e.department_id',
-        'et.employee_type_name', 'd.department_name', 'sd.sub_department_name'
+        'et.employee_type_name', 'd.department_name', 'sd.sub_department_name',
+        'pt.position_name', 'pt.position_id'
       )
       .leftJoin('employee_types as et', 'et.employee_type_id', 'e.employee_type_id')
       .leftJoin('departments as d', 'd.department_id', 'e.department_id')
-      .leftJoin('sub_departments as sd', 'sd.sub_department_id', 'e.sub_department_id');
+      .leftJoin('sub_departments as sd', 'sd.sub_department_id', 'e.sub_department_id')
+      .leftJoin('positions as pt', 'pt.position_id', 'e.position_id');
 
     if (query) {
-      let _query = `%${ query }%`;
+      let _query = `%${query}%`;
       sql.where(w => w
         .where('e.first_name', 'LIKE', _query)
         .orWhere('e.last_name', 'LIKE', _query)
@@ -42,7 +44,7 @@ export class EmployeeModel {
     }
 
     // .where('is_enabled', 'Y')
-  return sql.orderByRaw('e.first_name, e.last_name ASC')
+    return sql.orderByRaw('e.first_name, e.last_name ASC')
       .limit(limit)
       .offset(offset);
   }
@@ -52,7 +54,7 @@ export class EmployeeModel {
       .select(db.raw('count(*) as total'));
 
     if (query) {
-      let _query = `%${ query }%`;
+      let _query = `%${query}%`;
       sql.where(w => w
         .where('e.first_name', 'LIKE', _query)
         .orWhere('e.last_name', 'LIKE', _query)
@@ -89,6 +91,75 @@ export class EmployeeModel {
     return db('employees')
       .where('employee_id', employeeId)
       .del();
+  }
+
+  getInfo(db: knex, employeeId: any) {
+    return db('employees as e')
+      .select('e.first_name', 'e.last_name',
+        'e.username', 'd.department_name', 'sd.sub_department_name',
+        'pt.position_name', 'pt.position_id')
+      .leftJoin('departments as d', 'd.department_id', 'e.department_id')
+      .leftJoin('sub_departments as sd', 'sd.sub_department_id', 'e.sub_department_id')
+      .leftJoin('positions as pt', 'pt.position_id', 'e.position_id')
+      .where('e.employee_id', employeeId)
+      .limit(1);
+  }
+
+  readManagerEmployee(
+    db: knex,
+    query: any,
+    managerId: any,
+    limit: number,
+    offset: number) {
+
+    var sqlSubDepartment = db('user_sub_departments as usd')
+      .select('usd.sub_department_id')
+      .where('usd.user_id', managerId);
+
+    let sql = db('employees as e')
+      .select(
+        'e.employee_id', 'e.first_name', 'e.last_name',
+        'e.employee_type_id', 'e.is_enabled', 'e.username', 'e.sub_department_id', 'e.department_id',
+        'et.employee_type_name', 'd.department_name', 'sd.sub_department_name',
+        'pt.position_name', 'pt.position_id'
+      )
+      .leftJoin('employee_types as et', 'et.employee_type_id', 'e.employee_type_id')
+      .leftJoin('departments as d', 'd.department_id', 'e.department_id')
+      .leftJoin('sub_departments as sd', 'sd.sub_department_id', 'e.sub_department_id')
+      .leftJoin('positions as pt', 'pt.position_id', 'e.position_id')
+      .whereIn('e.sub_department_id', sqlSubDepartment);
+
+    if (query) {
+      let _query = `%${query}%`;
+      sql.where(w => w
+        .where('e.first_name', 'LIKE', _query)
+        .orWhere('e.last_name', 'LIKE', _query)
+      );
+    }
+
+    return sql.orderByRaw('e.first_name, e.last_name ASC')
+      .limit(limit)
+      .offset(offset);
+  }
+
+  readTotalManagerEmployee(db: knex, query: any, managerId: any) {
+    const sqlSubDepartment = db('user_sub_departments as usd')
+      .select('usd.sub_department_id')
+      .where('usd.user_id', managerId);
+
+    let sql = db('employees as e')
+      .select(db.raw('count(*) as total'))
+      .whereIn('e.sub_department_id', sqlSubDepartment);
+
+    if (query) {
+      let _query = `%${query}%`;
+      sql.where(w => w
+        .where('e.first_name', 'LIKE', _query)
+        .orWhere('e.last_name', 'LIKE', _query)
+      );
+    }
+
+    return sql;
   }
 
 }

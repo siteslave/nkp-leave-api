@@ -33,19 +33,35 @@ router.get('/pdf', async (req: Request, res: Response) => {
   const fileName = `${moment().format('x')}.pdf`;
   const pdfPath = path.join(exportPath, fileName);
 
-  const _ejsPath = path.join(__dirname, '../../templates/test.ejs');
+  const _ejsPath = path.join(__dirname, '../../templates/leave.ejs');
 
   var contents = fs.readFileSync(_ejsPath, 'utf8');
-  var html = ejs.render(contents, {name: 'Satit Rianpit'});
+  const data: any = {};
+  data.currentDate = `${moment().locale('th').format('D MMMM')} พ.ศ.​ ${moment().get('year') + 543}`;
+  data.leaveTypeName = 'ลาพักผ่อน';
+  data.positionName = 'นักวิชาการคอมพิวเตอร์ปฏิบัติการ';
+  data.employeeName = 'สถิตย์ เรียนพิศ';
+  data.departmentName = 'กลุ่มการพยาบาล';
+  data.subDepartmentName = 'หอผู้ป่วยในหญิง';
+  data.startDate = '12 มิถุนายน 2562';
+  data.endDate = '18 มิถุนายน 2562';
+  data.lastStartDate = '10 มิถุนายน 2562';
+  data.lastEndDate = '11 มิถุนายน 2562';
+  data.lastLeaveDays = 2;
+  data.leaveDays = 6;
 
-  pdf.create(html).toFile(pdfPath, function (err, data) {
+  var html = ejs.render(contents, data);
+
+  var options = { format: 'A4' };
+
+  pdf.create(html, options).toFile(pdfPath, function (err, data) {
     if (err) {
       console.log(err);
-      res.send({ok: false, error: err});
+      res.send({ ok: false, error: err });
     } else {
-      fs.readFile(pdfPath , function (err, data){
+      fs.readFile(pdfPath, function (err, data) {
         if (err) {
-          res.send({ok: false, error: err});
+          res.send({ ok: false, error: err });
         } else {
 
           rimraf.sync(pdfPath);
