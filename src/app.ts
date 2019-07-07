@@ -10,7 +10,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import * as cors from 'cors';
 
 // configure environment
-require('dotenv').config({path: path.join(__dirname, '../config')});
+require('dotenv').config({ path: path.join(__dirname, '../config') });
 
 import { JwtModel } from './models/jwt';
 import indexRoute from './routes/index';
@@ -22,8 +22,9 @@ import subDepartmentRoute from './routes/sub_departments';
 import loginRoute from './routes/login';
 import leaveTypeRoute from './routes/leave_types';
 import leaveRoute from './routes/leaves';
-import serviceUserRoute from './routes/services/users';
+import serviceEmployeeRoute from './routes/services/employee';
 import serviceManagerRoute from './routes/services/manager';
+import positionsRoute from './routes/positions';
 
 import { MySqlConnectionConfig } from 'knex';
 import rateLimit = require("express-rate-limit");
@@ -43,17 +44,17 @@ app.set('view engine', 'ejs');
 //uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname,'../public','favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json({limit: '5mb'}));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use(helmet());
-app.use(helmet.hidePoweredBy({setTo: 'PHP 4.2.0'}));
+app.use(helmet.hidePoweredBy({ setTo: 'PHP 4.2.0' }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 10000 // limit each IP to 100 requests per windowMs
 });
 
 // limit for all route
@@ -70,7 +71,7 @@ const connection: MySqlConnectionConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   multipleStatements: true,
-  debug: true
+  debug: false
 };
 
 const db = knex({
@@ -148,8 +149,9 @@ app.use('/employees', employeeRoute);
 app.use('/sub-departments', subDepartmentRoute);
 app.use('/leave-types', leaveTypeRoute);
 app.use('/leaves', auth, leaveRoute);
-app.use('/services/users', auth, userAuth, serviceUserRoute);
+app.use('/services/employees', auth, userAuth, serviceEmployeeRoute);
 app.use('/services/manager', auth, managerAuth, serviceManagerRoute);
+app.use('/positions', auth, positionsRoute);
 app.use('/login', loginRoute);
 app.use('/', indexRoute);
 

@@ -1,21 +1,25 @@
 /// <reference path="../../../typings.d.ts" />
 
+import * as crypto from 'crypto';
+
 import { Request, Response, Router } from 'express';
 import { LeaveTypeModel } from "../../models/leave_type";
 import { LeaveModel } from "../../models/leave";
+import { EmployeeModel } from "../../models/employee";
 
 const leaveTypeModel = new LeaveTypeModel();
 const leaveModel = new LeaveModel();
+const employeeModel = new EmployeeModel();
 
 const router: Router = Router();
 
 router.get('/leave-types', async (req: Request, res: Response) => {
   try {
     const rs: any = await leaveTypeModel.read(req.db, null, 100, 0);
-    res.send({ok: true, rows: rs});
+    res.send({ ok: true, rows: rs });
   } catch (e) {
     console.log(e);
-    res.send({ok: false, error: e.message});
+    res.send({ ok: false, error: e.message });
   }
 
 });
@@ -42,13 +46,13 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.create(req.db, data);
-      res.send({ok: true});
+      res.send({ ok: true });
     } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 
@@ -74,13 +78,13 @@ router.put('/leaves/:leaveId', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.update(req.db, leaveId, data);
-      res.send({ok: true});
+      res.send({ ok: true });
     } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 
@@ -93,15 +97,66 @@ router.delete('/leaves/:leaveId', async (req: Request, res: Response) => {
   if (leaveId) {
     try {
       await leaveModel.delete(req.db, leaveId, employeeId);
-      res.send({ok: true});
+      res.send({ ok: true });
     } catch (e) {
       console.log(e);
-      res.send({ok: false, code: 500, error: 'เกิดข้อผิดพลาด'});
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
     }
   } else {
-    res.send({ok: false, error: 'ข้อมูลไม่ครบ'});
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
 });
 
+
+router.get('/info', async (req: Request, res: Response) => {
+
+  const employeeId = req.decoded.employee_id;
+
+  if (employeeId) {
+    try {
+      const rs: any = await employeeModel.getInfo(req.db, employeeId);
+      if (rs.length) {
+        const info = rs[0];
+        res.send({ ok: true, info: info });
+      } else {
+        res.send({ ok: false, error: 'ไม่พบข้อมูล' });
+      }
+    } catch (e) {
+      console.log(e);
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
+    }
+  } else {
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
+  }
+});
+
+router.put('/info', async (req: Request, res: Response) => {
+
+  const employeeId = req.decoded.employee_id;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const password = req.body.password || null;
+
+  if (employeeId && firstName && lastName) {
+    try {
+      let data: any = {};
+      data.first_name = firstName;
+      data.last_name = lastName;
+
+      if (password) {
+        const encPassword = crypto.createHash('md5').update(password).digest('hex');
+        data.password = encPassword;
+      }
+
+      await employeeModel.update(req.db, employeeId, data);
+      res.send({ ok: true });
+    } catch (e) {
+      console.log(e);
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
+    }
+  } else {
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
+  }
+});
 
 export default router;

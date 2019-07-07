@@ -59,4 +59,12 @@ export class UserModel {
       .del();
   }
 
+  getInfo(db: knex, userId: any) {
+    return db('users as u')
+      .select('u.first_name', 'u.last_name',
+        'u.username', 'u.user_type')
+      .where('u.user_id', userId)
+      .limit(1);
+  }
+
 }
