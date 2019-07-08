@@ -8,7 +8,6 @@ import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
 import { NextFunction, Request, Response, Router } from 'express';
 import * as cors from 'cors';
-
 // configure environment
 require('dotenv').config({ path: path.join(__dirname, '../config') });
 
@@ -25,6 +24,8 @@ import leaveRoute from './routes/leaves';
 import serviceEmployeeRoute from './routes/services/employee';
 import serviceManagerRoute from './routes/services/manager';
 import positionsRoute from './routes/positions';
+import leaveSetting from './routes/leave-settings';
+import sharedRoute from './routes/shared';
 
 import { MySqlConnectionConfig } from 'knex';
 import rateLimit = require("express-rate-limit");
@@ -141,6 +142,18 @@ const managerAuth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const adminAuth = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.decoded.user_type === 'ADMIN') {
+    next();
+  } else {
+    return res.send({
+      ok: false,
+      error: 'ACCESS DENIED',
+      code: 401
+    });
+  }
+};
+
 // app.use('/api', auth, indexRoute);
 app.use('/employee-types', employeeTypeRoute);
 app.use('/departments', departmentRoute);
@@ -149,9 +162,11 @@ app.use('/employees', employeeRoute);
 app.use('/sub-departments', subDepartmentRoute);
 app.use('/leave-types', leaveTypeRoute);
 app.use('/leaves', auth, leaveRoute);
+app.use('/leave-settings', auth, adminAuth, leaveSetting);
 app.use('/services/employees', auth, userAuth, serviceEmployeeRoute);
 app.use('/services/manager', auth, managerAuth, serviceManagerRoute);
 app.use('/positions', auth, positionsRoute);
+app.use('/shared', auth, sharedRoute);
 app.use('/login', loginRoute);
 app.use('/', indexRoute);
 

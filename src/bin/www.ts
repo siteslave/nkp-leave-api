@@ -1,9 +1,16 @@
 
 import app from '../app';
 import * as http from 'http';
+const fs = require('fs');
+const https = require('https');
 
 const port = normalizePort(+process.env.PORT || 3000);
 app.set('port', port);
+
+// var server = https.createServer({
+//   key: fs.readFileSync('../certs/server.key'),
+//   cert: fs.readFileSync('../certs/server.cert')
+// }, app);
 
 var server = http.createServer(app);
 
