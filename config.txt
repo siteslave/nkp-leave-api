@@ -10,5 +10,10 @@ PORT=3000
 
 UPLOAD_DIR=./uploads
 
-LINE_NOTIFY_TOKEN=
+LINE_NOTIFY_TOKEN=xxxx
 
+LINE_BOT_TOKEN=xxxxx
+
+MQTT_URL=localhost
+
+SERVER_URL=http://localhost:4200

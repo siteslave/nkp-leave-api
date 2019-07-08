@@ -48,7 +48,7 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.create(req.db, data);
-      // await lineModel.sendNotify('มีผู้บันทึกวันลาเข้ามาใหม่');
+      await lineModel.sendNotify('มีผู้บันทึกวันลาเข้ามาใหม่');
       req.mqttClient.publish('manager/main', 'reload');
       res.send({ ok: true });
     } catch (e) {
@@ -61,7 +61,7 @@ router.post('/leaves', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-// localhost:3000/services/users/leaves/xx
+// :3000/services/users/leaves/xx
 router.put('/leaves/:leaveId', async (req: Request, res: Response) => {
 
   const leaveId = req.params.leaveId;

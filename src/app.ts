@@ -25,6 +25,7 @@ import leaveRoute from './routes/leaves';
 import serviceEmployeeRoute from './routes/services/employee';
 import serviceManagerRoute from './routes/services/manager';
 import positionsRoute from './routes/positions';
+import lineRoute from './routes/line';
 
 import { MySqlConnectionConfig } from 'knex';
 import rateLimit = require("express-rate-limit");
@@ -88,7 +89,7 @@ const db = knex({
   },
 });
 
-const mqttClient = mqtt.connect('mqtt://localhost', {
+const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_URL}`, {
   clientId: Math.floor(Math.random() * 10000),
   username: 'mqtt',
   password: 'password'
@@ -159,6 +160,7 @@ app.use('/leaves', auth, leaveRoute);
 app.use('/services/employees', auth, userAuth, serviceEmployeeRoute);
 app.use('/services/manager', auth, managerAuth, serviceManagerRoute);
 app.use('/positions', auth, positionsRoute);
+app.use('/line', lineRoute);
 app.use('/login', loginRoute);
 app.use('/', indexRoute);
 
