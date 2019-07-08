@@ -46,6 +46,7 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.create(req.db, data);
+      req.mqttClient.publish('manager/main', 'reload');
       res.send({ ok: true });
     } catch (e) {
       console.log(e);
