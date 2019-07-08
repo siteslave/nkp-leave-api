@@ -5,6 +5,7 @@ declare global {
     export interface Request {
       db: knex;
       decoded: any;
+      mqttClient: any;
     }
   }
 }

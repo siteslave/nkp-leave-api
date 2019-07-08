@@ -8,7 +8,7 @@ import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
 import { NextFunction, Request, Response, Router } from 'express';
 import * as cors from 'cors';
-
+const mqtt = require('mqtt');
 // configure environment
 require('dotenv').config({ path: path.join(__dirname, '../config') });
 
@@ -88,8 +88,15 @@ const db = knex({
   },
 });
 
+const mqttClient = mqtt.connect('mqtt://localhost', {
+  clientId: Math.floor(Math.random() * 10000),
+  username: 'mqtt',
+  password: 'password'
+});
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   req.db = db;
+  req.mqttClient = mqttClient;
   next();
 });
 
