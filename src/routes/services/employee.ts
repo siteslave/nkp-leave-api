@@ -6,10 +6,12 @@ import { Request, Response, Router } from 'express';
 import { LeaveTypeModel } from "../../models/leave_type";
 import { LeaveModel } from "../../models/leave";
 import { EmployeeModel } from "../../models/employee";
+import { LineModel } from '../../models/line';
 
 const leaveTypeModel = new LeaveTypeModel();
 const leaveModel = new LeaveModel();
 const employeeModel = new EmployeeModel();
+const lineModel = new LineModel();
 
 const router: Router = Router();
 
@@ -46,6 +48,7 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.create(req.db, data);
+      // await lineModel.sendNotify('มีผู้บันทึกวันลาเข้ามาใหม่');
       req.mqttClient.publish('manager/main', 'reload');
       res.send({ ok: true });
     } catch (e) {
