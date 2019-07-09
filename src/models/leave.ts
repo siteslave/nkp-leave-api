@@ -149,7 +149,7 @@ export class LeaveModel {
 
   getCurrentLeaveSummary(db: knex, employeeId: any, periodId: any) {
     return db('leave_days as ld')
-      .select('ld.leave_days_num', 'lt.leave_type_name', 'lt.leave_type_id')
+      .select('ld.leave_days_num', 'lt.leave_type_name', 'lt.leave_type_id', 'lt.image_url as leave_type_image')
       .innerJoin('leave_types as lt', 'lt.leave_type_id', 'ld.leave_type_id')
       .where('ld.employee_id', employeeId)
       .where('ld.period_id', periodId)
