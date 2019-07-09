@@ -11,3 +11,5 @@ app/*
 .env
 config
 db/*
+
+uploads/*
