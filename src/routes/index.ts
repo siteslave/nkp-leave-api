@@ -7,16 +7,19 @@ import * as path from 'path';
 import * as fse from 'fs-extra';
 import * as pdf from 'html-pdf';
 import * as rimraf from 'rimraf';
-
+import * as crypto from "crypto";
 import { Router, Request, Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
 
 import { JwtModel } from "../models/jwt";
+import { LineModel } from '../models/line';
+import { LoginModel } from '../models/login';
 import moment = require("moment");
 
 // const testModel = new TestModel();
 const jwtModel = new JwtModel();
-
+const lineModel = new LineModel();
+const loginModel = new LoginModel();
 const router: Router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
