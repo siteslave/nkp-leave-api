@@ -1,17 +1,103 @@
 /// <reference path="../../../typings.d.ts" />
 
 import * as crypto from 'crypto';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as moment from 'moment';
+import * as fse from 'fs-extra';
+import * as multer from 'multer';
 
 import { Request, Response, Router } from 'express';
 import { LeaveTypeModel } from "../../models/leave_type";
 import { LeaveModel } from "../../models/leave";
 import { EmployeeModel } from "../../models/employee";
+import { LineModel } from '../../models/line';
 
 const leaveTypeModel = new LeaveTypeModel();
 const leaveModel = new LeaveModel();
 const employeeModel = new EmployeeModel();
+const lineModel = new LineModel();
 
 const router: Router = Router();
+
+const uploadDir = process.env.UPLOAD_DIR || './uploads';
+
+fse.ensureDirSync(uploadDir);
+
+var storage = multer.diskStorage({
+  destination: function (req: any, file: any, cb: any) {
+    cb(null, uploadDir)
+  },
+  filename: function (req, file, cb) {
+    let _ext = path.extname(file.originalname);
+    cb(null, Date.now() + _ext)
+  }
+});
+
+let upload = multer({ storage: storage });
+
+// upload file
+router.post('/uploads', upload.any(), async (req: Request, res: Response) => {
+  const db: any = req.db;
+  const employeeId = req.decoded.employee_id;
+
+  var fileName = '';
+  var mimeType = '';
+
+  if (req.files.length) {
+    fileName = req.files[0].filename || null;
+    mimeType = req.files[0].mimetype || null;
+  }
+
+  console.log(req.files);
+  // save data
+
+  if (fileName) {
+    try {
+      // remove old image
+      await employeeModel.removeImage(db, employeeId);
+      // save image
+      await employeeModel.saveImage(db, employeeId, fileName, mimeType);
+
+      res.send({ ok: true });
+
+    } catch (error) {
+      res.send({ ok: false, error: error.message });
+    }
+  } else {
+    res.send({ ok: false, error: 'File not found!' });
+  }
+});
+
+// render file
+router.get('/image', async (req: Request, res: Response) => {
+  const db: any = req.db;
+  const employeeId: any = req.decoded.employee_id;
+
+  try {
+    const rs: any = await employeeModel.getImage(db, employeeId);
+
+    if (rs.length) {
+      const uploadDir = process.env.UPLOAD_DIR || './uploads';
+      const fileName = rs[0].image_path;
+
+      const imagePath = path.join(uploadDir, fileName);
+      const mimeType = rs[0].mime_type;
+
+      res.setHeader('Content-disposition', 'attachment; filename=' + fileName);
+      res.setHeader('Content-type', mimeType);
+
+      let filestream = fs.createReadStream(imagePath);
+      filestream.pipe(res);
+    } else {
+      res.send({ ok: false, error: 'image not found!', statusCode: 500 });
+    }
+  } catch (error) {
+    console.log(error);
+    res.send({ ok: false, error: error.message, statusCode: 500 });
+  }
+
+});
 
 router.get('/leave-types', async (req: Request, res: Response) => {
   try {
@@ -46,6 +132,8 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.remark = remark;
 
       await leaveModel.create(req.db, data);
+      await lineModel.sendNotify('มีผู้บันทึกวันลาเข้ามาใหม่');
+      req.mqttClient.publish('manager/main', 'reload');
       res.send({ ok: true });
     } catch (e) {
       console.log(e);
@@ -57,7 +145,7 @@ router.post('/leaves', async (req: Request, res: Response) => {
 });
 
 // UPDATE
-// localhost:3000/services/users/leaves/xx
+// :3000/services/users/leaves/xx
 router.put('/leaves/:leaveId', async (req: Request, res: Response) => {
 
   const leaveId = req.params.leaveId;

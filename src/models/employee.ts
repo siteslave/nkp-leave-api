@@ -162,4 +162,25 @@ export class EmployeeModel {
     return sql;
   }
 
+  saveImage(db: knex, employeeId: any, fileName: any, mimeType: any) {
+    return db('images')
+      .insert({
+        employee_id: employeeId,
+        image_path: fileName,
+        mime_type: mimeType
+      });
+  }
+
+  removeImage(db: knex, employeeId: any) {
+    return db('images')
+      .where('employee_id', employeeId)
+      .del();
+  }
+
+  getImage(db: knex, employeeId: any) {
+    return db('images')
+      .where('employee_id', employeeId)
+      .limit(1);
+  }
+
 }

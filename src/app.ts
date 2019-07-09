@@ -8,6 +8,7 @@ import * as HttpStatus from 'http-status-codes';
 import * as express from 'express';
 import { NextFunction, Request, Response, Router } from 'express';
 import * as cors from 'cors';
+const mqtt = require('mqtt');
 // configure environment
 require('dotenv').config({ path: path.join(__dirname, '../config') });
 
@@ -26,6 +27,7 @@ import serviceManagerRoute from './routes/services/manager';
 import positionsRoute from './routes/positions';
 import leaveSetting from './routes/leave-settings';
 import sharedRoute from './routes/shared';
+import lineRoute from './routes/line';
 
 import { MySqlConnectionConfig } from 'knex';
 import rateLimit = require("express-rate-limit");
@@ -89,8 +91,15 @@ const db = knex({
   },
 });
 
+const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_URL}`, {
+  clientId: Math.floor(Math.random() * 10000),
+  username: 'mqtt',
+  password: 'password'
+});
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   req.db = db;
+  req.mqttClient = mqttClient;
   next();
 });
 
@@ -167,6 +176,7 @@ app.use('/services/employees', auth, userAuth, serviceEmployeeRoute);
 app.use('/services/manager', auth, managerAuth, serviceManagerRoute);
 app.use('/positions', auth, positionsRoute);
 app.use('/shared', auth, sharedRoute);
+app.use('/line', lineRoute);
 app.use('/login', loginRoute);
 app.use('/', indexRoute);
 

@@ -21,6 +21,17 @@ export class LeaveModel {
       .offset(offset);
   }
 
+  leaveLast(db: knex, employeeId: any, limit = 1) {
+    return db('leaves as l')
+      .select('l.*', 'p.period_name', 'lt.leave_type_name')
+      .leftJoin('periods as p', 'p.period_id', 'l.period_id')
+      .leftJoin('leave_types as lt', 'lt.leave_type_id', 'l.leave_type_id')
+      .where('l.employee_id', employeeId)
+      .limit(limit)
+      .orderBy('l.leave_id', 'DESC');
+
+  }
+
   getTotal(db: knex, employeeId: any, status: any) {
     let sql = db('leaves')
       .select(db.raw('count(*) as total'));
@@ -138,7 +149,7 @@ export class LeaveModel {
 
   getCurrentLeaveSummary(db: knex, employeeId: any, periodId: any) {
     return db('leave_days as ld')
-      .select('ld.leave_days_num', 'lt.leave_type_name', 'lt.leave_type_id')
+      .select('ld.leave_days_num', 'lt.leave_type_name', 'lt.leave_type_id', 'lt.image_url as leave_type_image')
       .innerJoin('leave_types as lt', 'lt.leave_type_id', 'ld.leave_type_id')
       .where('ld.employee_id', employeeId)
       .where('ld.period_id', periodId)

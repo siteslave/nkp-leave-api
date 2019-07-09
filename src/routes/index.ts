@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as fse from 'fs-extra';
 import * as pdf from 'html-pdf';
 import * as rimraf from 'rimraf';
-
+import * as crypto from "crypto";
 import { Router, Request, Response } from 'express';
 import * as HttpStatus from 'http-status-codes';
 
@@ -16,7 +16,6 @@ import moment = require("moment");
 
 // const testModel = new TestModel();
 const jwtModel = new JwtModel();
-
 const router: Router = Router();
 
 router.get('/', async (req: Request, res: Response) => {

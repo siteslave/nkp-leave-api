@@ -46,5 +46,16 @@ export class LoginModel {
       .where('e.password', password)
       .limit(1);
   }
+  login(db: knex, username, password) {
+    return db('employees')
+      .where('is_enabled', 'Y')
+      .where('username', username)
+      .where('password', password)
+      .limit(1);
+  }
 
+  register(db: knex, lineId, employeeId) {
+    return db('employee_line')
+      .insert({ 'line_id': lineId, 'employee_id': employeeId });
+  }
 }
