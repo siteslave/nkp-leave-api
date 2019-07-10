@@ -50,7 +50,7 @@ router.get('/test', async (req: Request, res: Response) => {
           res.send({ ok: false, error: err });
         } else {
 
-          // rimraf.sync(pdfPath);
+          rimraf.sync(pdfPath);
 
           res.contentType("application/pdf");
           res.send(data);
