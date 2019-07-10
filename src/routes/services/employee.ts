@@ -7,6 +7,8 @@ import * as moment from 'moment';
 import * as fse from 'fs-extra';
 import * as multer from 'multer';
 
+const excel = require('excel4node');
+
 import { Request, Response, Router } from 'express';
 import { LeaveTypeModel } from "../../models/leave_type";
 import { LeaveModel } from "../../models/leave";
@@ -209,6 +211,93 @@ router.get('/info', async (req: Request, res: Response) => {
       } else {
         res.send({ ok: false, error: 'ไม่พบข้อมูล' });
       }
+    } catch (e) {
+      console.log(e);
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
+    }
+  } else {
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
+  }
+});
+
+router.get('/export', async (req: Request, res: Response) => {
+
+  const db = req.db;
+  const employeeId = req.decoded.employee_id;
+  const periodId = req.decoded.period_id;
+
+  if (employeeId) {
+    try {
+      const wb = new excel.Workbook();
+      const ws1 = wb.addWorksheet('สรุปการลา');
+      const ws2 = wb.addWorksheet('ประวัติการลา');
+
+      var myNumber = wb.createStyle({
+        numberFormat: '#,##0; (#,##0); -',
+      });
+
+      // วันลาล่าสุด	ลาทั้งหมด (วัน)	คงเหลือ (วัน)
+      // header สำหรับสรุปการลา
+      ws1.cell(1, 1).string('สรุปการลาประจำปีงบประมาณ');
+      ws1.cell(2, 1).string('ประเภทการลา');
+      ws1.cell(2, 2).string('วันที่ลาล่าสุด');
+      ws1.cell(2, 3).string('ลาทั้งหมด (วัน)');
+      ws1.cell(2, 4).string('คงเหลือ (วัน)');
+
+      // ประเภทการลา	วันที่ลา	จำนวนวัน	ปีงบประมาณ	สถานะ
+      // header สำหรับประวัติ
+      ws2.cell(1, 1).string('ประวัติการลาประจำปีงบประมาณ');
+      ws2.cell(2, 1).string('ประเภทการลา');
+      ws2.cell(2, 2).string('วันที่');
+      ws2.cell(2, 3).string('จำนวนวัน');
+      ws2.cell(2, 4).string('ปีงบประมาณ');
+      ws2.cell(2, 5).string('สถานะ');
+
+      const rs: any = await leaveModel.getLeaveHistoryByEmployee(db, employeeId, periodId);
+      const rsLeaveDays = await leaveModel.getCurrentLeaveSummary(db, employeeId, periodId);
+
+      const summary: any = [];
+
+      for (const item of rsLeaveDays) {
+        const obj: any = {};
+        obj.leave_type_name = item.leave_type_name;
+        obj.leave_type_id = item.leave_type_id;
+        obj.leave_days_num = item.leave_days_num;
+        const total = await leaveModel.getCurrentLeaveTotal(db, employeeId, periodId, item.leave_type_id);
+        const lastLeaveDay = await leaveModel.getLastLeaveDay(db, employeeId, periodId, item.leave_type_id);
+        obj.current_leave = total;
+        obj.last_leave_day = lastLeaveDay ? moment(lastLeaveDay).locale('th').format('DD MMMM YYYY') : '-';
+
+        if (obj.leave_days_num > 0) {
+          obj.remain_days = +obj.leave_days_num - +obj.current_leave;
+        } else {
+          obj.remain_days = 0;
+        }
+
+        summary.push(obj);
+      }
+
+      var startRow = 3;
+
+      summary.forEach(v => {
+        ws1.cell(startRow, 1).string(v.leave_type_name);
+        ws1.cell(startRow, 2).string(v.last_leave_day);
+        ws1.cell(startRow, 3).number(v.current_leave).style(myNumber);
+        ws1.cell(startRow, 4).number(v.remain_days).style(myNumber);
+
+        startRow++;
+      });
+
+
+      const endCell = startRow - 1; // without header
+      ws1.cell(startRow, 2).string('รวม');
+      ws1.cell(startRow, 3).formula(`SUM(C3:C${endCell})`).style(myNumber);
+      ws1.cell(startRow, 4).formula(`SUM(D3:D${endCell})`).style(myNumber);
+
+      const rnd = moment().format('x');
+      const exportFile = `สรุปการลา-${rnd}.xlsx`;
+      wb.write(exportFile, res);
+
     } catch (e) {
       console.log(e);
       res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
