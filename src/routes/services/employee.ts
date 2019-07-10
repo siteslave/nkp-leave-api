@@ -386,8 +386,8 @@ router.get('/pdf', async (req: Request, res: Response) => {
   data.items = [];
 
   rs.forEach(v => {
-    let startDate = `${moment(v.start_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.start_date).get('year') + 543}`;
-    let endDate = `${moment(v.end_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.end_date).get('year') + 543}`;
+    let startDate = `${moment(v.start_date).locale('th').format('D MMM ')} ${moment(v.start_date).get('year') + 543}`;
+    let endDate = `${moment(v.end_date).locale('th').format('D MMM ')} ${moment(v.end_date).get('year') + 543}`;
 
     const obj: any = {};
     obj.leave_type_name = v.leave_type_name;
