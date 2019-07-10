@@ -84,7 +84,7 @@ export class LeaveModel {
   }
 
   // MANAGER
-  managerRead(db: knex, userId: any, status: any, limit: number, offset: number) {
+  managerRead(db: knex, userId: any, employeeId: any, status: any, limit: number, offset: number) {
 
     var sqlSubDepartment = db('user_sub_departments as usd')
       .select('usd.sub_department_id')
@@ -110,12 +110,16 @@ export class LeaveModel {
       sql.where('l.leave_status', status);
     }
 
+    if (employeeId) {
+      sql.where('l.employee_id', employeeId);
+    }
+
     return sql.orderBy('l.start_date', 'DESC')
       .limit(limit)
       .offset(offset);
   }
 
-  mamagerGetTotal(db: knex, userId: any, status: any) {
+  mamagerGetTotal(db: knex, userId: any, employeeId: any, status: any) {
 
     var sqlSubDepartment = db('user_sub_departments as usd')
       .select('usd.sub_department_id')
@@ -131,6 +135,10 @@ export class LeaveModel {
 
     if (status) {
       sql.where('l.leave_status', status);
+    }
+
+    if (employeeId) {
+      sql.where('l.employee_id', employeeId);
     }
 
     return sql;

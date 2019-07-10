@@ -21,8 +21,10 @@ router.get('/leaves', async (req: Request, res: Response) => {
     const offset = +req.query.offset || 0;
     const status = req.query.status || null;
 
-    const rs: any = await leaveModel.managerRead(req.db, userId, status, limit, offset);
-    const rsTotal: any = await leaveModel.mamagerGetTotal(req.db, userId, status);
+    const employeeId = req.query.employeeId || null;
+
+    const rs: any = await leaveModel.managerRead(req.db, userId, employeeId, status, limit, offset);
+    const rsTotal: any = await leaveModel.mamagerGetTotal(req.db, userId, employeeId, status);
     const total = rsTotal ? rsTotal[0].total : 0;
 
     res.send({ ok: true, rows: rs, total: total });
