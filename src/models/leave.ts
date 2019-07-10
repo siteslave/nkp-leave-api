@@ -199,4 +199,20 @@ export class LeaveModel {
     return rs.length ? rs[0][0] : [];
   }
 
+  async searchEmployeeTypeahead(db: knex, query: any) {
+    const _query = `%${query}%`;
+
+    const sql = `
+    select e.employee_id, e.first_name, e.last_name,
+    p.position_name
+    from employees as e
+    left join positions as p on p.position_id=e.position_id
+    where e.first_name like ? or e.last_name like ?
+    limit 10
+    `;
+
+    return db.raw(sql, [_query, _query]);
+
+  }
+
 }

@@ -33,6 +33,20 @@ router.get('/leaves', async (req: Request, res: Response) => {
 
 });
 
+router.get('/search-employee', async (req: Request, res: Response) => {
+  try {
+    const db = req.db;
+    const query = req.query.q;
+    const rs: any = await leaveModel.searchEmployeeTypeahead(db, query);
+    res.send(rs[0]);
+
+  } catch (e) {
+    console.log(e);
+    res.send({ ok: false, error: e.message });
+  }
+
+});
+
 // UPDATE
 router.post('/leaves/status', async (req: Request, res: Response) => {
 
