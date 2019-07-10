@@ -277,7 +277,7 @@ router.get('/export', async (req: Request, res: Response) => {
         summary.push(obj);
       }
 
-      var startRow = 3;
+      let startRow = 3;
 
       summary.forEach(v => {
         ws1.cell(startRow, 1).string(v.leave_type_name);
@@ -288,11 +288,32 @@ router.get('/export', async (req: Request, res: Response) => {
         startRow++;
       });
 
-
-      const endCell = startRow - 1; // without header
+      const endCell = startRow - 1;
       ws1.cell(startRow, 2).string('รวม');
       ws1.cell(startRow, 3).formula(`SUM(C3:C${endCell})`).style(myNumber);
       ws1.cell(startRow, 4).formula(`SUM(D3:D${endCell})`).style(myNumber);
+
+      // history
+      let startRow2 = 3;
+
+      rs.forEach(v => {
+        ws2.cell(startRow2, 1).string(v.leave_type_name);
+
+        let startDate = `${moment(v.start_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.start_date).get('year') + 543}`;
+        let endDate = `${moment(v.end_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.end_date).get('year') + 543}`;
+        let leaveDays = `${startDate} - ${endDate}`;
+
+        ws2.cell(startRow2, 2).string(leaveDays);
+        ws2.cell(startRow2, 3).number(v.leave_days).style(myNumber);
+        ws2.cell(startRow2, 4).string(v.period_name);
+        ws2.cell(startRow2, 5).string(v.leave_status);
+
+        startRow2++;
+      });
+
+      const endCell2 = startRow2 - 1;
+      ws2.cell(startRow2, 2).string('รวม');
+      ws2.cell(startRow2, 3).formula(`SUM(C3:C${endCell2})`).style(myNumber);
 
       const rnd = moment().format('x');
       const exportFile = `สรุปการลา-${rnd}.xlsx`;
