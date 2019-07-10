@@ -6,6 +6,9 @@ import * as fs from 'fs';
 import * as moment from 'moment';
 import * as fse from 'fs-extra';
 import * as multer from 'multer';
+import * as ejs from 'ejs';
+import * as pdf from 'html-pdf';
+import * as rimraf from 'rimraf';
 
 const excel = require('excel4node');
 
@@ -355,6 +358,74 @@ router.put('/info', async (req: Request, res: Response) => {
   } else {
     res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
+});
+
+router.get('/pdf', async (req: Request, res: Response) => {
+  const db = req.db;
+  const employeeId = req.decoded.employee_id;
+  const periodId = req.decoded.period_id;
+
+  const exportPath = path.join(__dirname, '../../../output');
+  fse.ensureDirSync(exportPath);
+
+  const fileName = `${moment().format('x')}.pdf`;
+  const pdfPath = path.join(exportPath, fileName);
+
+  const _ejsPath = path.join(__dirname, '../../../templates/history.ejs');
+  let contents = fs.readFileSync(_ejsPath, 'utf8');
+
+  const rs: any = await leaveModel.getLeaveHistoryByEmployee(db, employeeId, periodId);
+  const rsEmployee: any = await employeeModel.getInfo(db, employeeId);
+
+  let data: any = {};
+
+  data.periodName = req.decoded.period_name;
+  data.fullname = rsEmployee ? `${rsEmployee[0].first_name} ${rsEmployee[0].last_name}` : '-';
+  data.positionName = rsEmployee ? rsEmployee[0].position_name : '-';
+
+  data.items = [];
+
+  rs.forEach(v => {
+    let startDate = `${moment(v.start_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.start_date).get('year') + 543}`;
+    let endDate = `${moment(v.end_date).locale('th').format('D MMM ')} พ.ศ. ${moment(v.end_date).get('year') + 543}`;
+
+    const obj: any = {};
+    obj.leave_type_name = v.leave_type_name;
+    obj.start_date = startDate;
+    obj.end_date = endDate;
+    obj.leave_days = v.leave_days;
+    obj.period_name = v.period_name;
+    obj.leave_status = v.leave_status;
+
+    data.items.push(obj);
+  });
+
+  // create HTML file
+  let html = ejs.render(contents, data);
+
+  // Pdf size
+  let options = { format: 'A4', orientation: "landscape" };
+
+  // Create pdf file
+  pdf.create(html, options).toFile(pdfPath, function (err, data) {
+    if (err) {
+      console.log(err);
+      res.send({ ok: false, error: err });
+    } else {
+      fs.readFile(pdfPath, function (err, data) {
+        if (err) {
+          res.send({ ok: false, error: err });
+        } else {
+
+          rimraf.sync(pdfPath);
+
+          res.contentType("application/pdf");
+          res.send(data);
+        }
+      });
+    }
+  });
+
 });
 
 export default router;
