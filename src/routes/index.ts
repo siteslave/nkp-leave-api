@@ -18,6 +18,50 @@ import moment = require("moment");
 const jwtModel = new JwtModel();
 const router: Router = Router();
 
+router.get('/test', async (req: Request, res: Response) => {
+  const exportPath = path.join(__dirname, '../../output');
+  fse.ensureDirSync(exportPath);
+
+  const fileName = `${moment().format('x')}.pdf`;
+  const pdfPath = path.join(exportPath, fileName);
+
+  const _ejsPath = path.join(__dirname, '../../templates/test.ejs');
+  let contents = fs.readFileSync(_ejsPath, 'utf8');
+
+  let data: any = {};
+  data.name = 'Satit Rianpit';
+  data.items = [{ name: 'xxxx', value: 20 }, { name: 'yyyyyy', value: 10 }];
+  // create HTML file
+  let html = ejs.render(contents, data);
+
+  console.log(html);
+
+  // Pdf size
+  let options = { format: 'A4' };
+
+  // Create pdf file
+  pdf.create(html, options).toFile(pdfPath, function (err, data) {
+    if (err) {
+      console.log(err);
+      res.send({ ok: false, error: err });
+    } else {
+      fs.readFile(pdfPath, function (err, data) {
+        if (err) {
+          res.send({ ok: false, error: err });
+        } else {
+
+          // rimraf.sync(pdfPath);
+
+          res.contentType("application/pdf");
+          res.send(data);
+        }
+      });
+    }
+  });
+
+});
+
+
 router.get('/', async (req: Request, res: Response) => {
   var token = jwtModel.sign({ hello: 'xxx' });
   console.log(token);
