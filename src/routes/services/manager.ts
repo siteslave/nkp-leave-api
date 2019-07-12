@@ -1,6 +1,8 @@
 /// <reference path="../../../typings.d.ts" />
 
 import * as crypto from "crypto";
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { Request, Response, Router } from 'express';
 import { LeaveModel } from "../../models/leave";
@@ -151,6 +153,36 @@ router.get('/employees', async (req: Request, res: Response) => {
   } else {
     res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
   }
+});
+
+// render file
+router.get('/employee/:employeeId/image', async (req: Request, res: Response) => {
+  const db: any = req.db;
+  const employeeId: any = req.params.employeeId;
+
+  try {
+    const rs: any = await employeeModel.getImage(db, employeeId);
+
+    if (rs.length) {
+      const uploadDir = process.env.UPLOAD_DIR || './uploads';
+      const fileName = rs[0].image_path;
+
+      const imagePath = path.join(uploadDir, fileName);
+      const mimeType = rs[0].mime_type;
+
+      res.setHeader('Content-disposition', 'attachment; filename=' + fileName);
+      res.setHeader('Content-type', mimeType);
+
+      let filestream = fs.createReadStream(imagePath);
+      filestream.pipe(res);
+    } else {
+      res.send({ ok: false, error: 'image not found!', statusCode: 500 });
+    }
+  } catch (error) {
+    console.log(error);
+    res.send({ ok: false, error: error.message, statusCode: 500 });
+  }
+
 });
 
 export default router;

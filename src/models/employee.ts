@@ -97,10 +97,11 @@ export class EmployeeModel {
     return db('employees as e')
       .select('e.first_name', 'e.last_name',
         'e.username', 'd.department_name', 'sd.sub_department_name',
-        'pt.position_name', 'pt.position_id')
+        'pt.position_name', 'pt.position_id', 'im.image_path')
       .leftJoin('departments as d', 'd.department_id', 'e.department_id')
       .leftJoin('sub_departments as sd', 'sd.sub_department_id', 'e.sub_department_id')
       .leftJoin('positions as pt', 'pt.position_id', 'e.position_id')
+      .leftJoin('images as im', 'im.employee_id', 'e.employee_id')
       .where('e.employee_id', employeeId)
       .limit(1);
   }
