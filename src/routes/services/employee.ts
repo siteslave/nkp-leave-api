@@ -10,6 +10,10 @@ import * as ejs from 'ejs';
 import * as pdf from 'html-pdf';
 import * as rimraf from 'rimraf';
 
+const gcm = require('node-gcm');
+
+var gcmSender = new gcm.Sender(process.env.GCM_SENDER_KEY);
+
 const excel = require('excel4node');
 
 import { Request, Response, Router } from 'express';
@@ -17,7 +21,9 @@ import { LeaveTypeModel } from "../../models/leave_type";
 import { LeaveModel } from "../../models/leave";
 import { EmployeeModel } from "../../models/employee";
 import { LineModel } from '../../models/line';
+import { UserModel } from '../../models/user';
 
+const userModel = new UserModel();
 const leaveTypeModel = new LeaveTypeModel();
 const leaveModel = new LeaveModel();
 const employeeModel = new EmployeeModel();
@@ -125,6 +131,8 @@ router.post('/leaves', async (req: Request, res: Response) => {
   const leaveDays = req.body.leaveDays;
   const remark = req.body.remark;
 
+  const db = req.db;
+
   if (leaveTypeId && startDate && endDate && leaveDays) {
     try {
       const data: any = {};
@@ -136,9 +144,49 @@ router.post('/leaves', async (req: Request, res: Response) => {
       data.leave_days = leaveDays;
       data.remark = remark;
 
-      await leaveModel.create(req.db, data);
+      await leaveModel.create(db, data);
+
+      // get manager
+      const rs: any = await userModel.getDeviceTokenFromEmployeeId(db, employeeId);
+      const managers = rs[0];
+      let devicesTokens = [];
+
+      console.log(managers);
+
+      if (managers.length) {
+        managers.forEach(v => {
+          if (v.device_token) {
+            devicesTokens.push(v.device_token);
+          }
+        });
+
+        if (devicesTokens.length) {
+          // push notify
+
+          var message = new gcm.Message({
+            contentAvailable: true,
+            notification: {
+              sound: 'default',
+              title: "ระบบแจ้งเตือนลาหยุดราชการ",
+              body: 'มีการแจ้งขอลาหยุด'
+            },
+            data: {
+              click_action: "FLUTTER_NOTIFICATION_CLICK",
+            }
+          });
+
+          var regTokens = devicesTokens;
+
+          gcmSender.send(message, { registrationTokens: regTokens }, function (err, response) {
+            if (err) console.error(err);
+            else console.log(response);
+          });
+        }
+      }
+
       await lineModel.sendNotify('มีผู้บันทึกวันลาเข้ามาใหม่');
       req.mqttClient.publish('manager/main', 'reload');
+
       res.send({ ok: true });
     } catch (e) {
       console.log(e);

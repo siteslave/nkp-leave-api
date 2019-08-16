@@ -7,7 +7,7 @@ export class UserModel {
       .select('user_id', 'first_name', 'last_name', 'user_type', 'is_enabled', 'username');
 
     if (query) {
-      let _query = `%${ query }%`;
+      let _query = `%${query}%`;
       sql.where(w => w
         .where('first_name', 'LIKE', _query)
         .orWhere('last_name', 'LIKE', _query)
@@ -18,7 +18,7 @@ export class UserModel {
       sql.where('user_type', userType);
     }
     // .where('is_enabled', 'Y')
-  return sql.orderByRaw('first_name, last_name ASC', )
+    return sql.orderByRaw('first_name, last_name ASC')
       .limit(limit)
       .offset(offset);
   }
@@ -28,7 +28,7 @@ export class UserModel {
       .select(db.raw('count(*) as total'));
 
     if (query) {
-      let _query = `%${ query }%`;
+      let _query = `%${query}%`;
       sql.where(w => w
         .where('first_name', 'LIKE', _query)
         .orWhere('last_name', 'LIKE', _query)
@@ -67,4 +67,22 @@ export class UserModel {
       .limit(1);
   }
 
+  updateDeviceToken(db: knex, userId: any, deviceToken: string) {
+    return db('users')
+      .where('user_id', userId)
+      .update('device_token', deviceToken);
+  }
+
+  getDeviceTokenFromEmployeeId(db: knex, employeeId: any) {
+    const sql = `
+    select u.username, s.sub_department_id, e.first_name, u.device_token
+    from users as u
+    inner join user_sub_departments as s on s.user_id=u.user_id
+    inner join employees as e on e.sub_department_id=s.sub_department_id
+    where e.employee_id=?
+    group by u.user_id
+    `;
+
+    return db.raw(sql, [employeeId]);
+  }
 }

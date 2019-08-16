@@ -40,6 +40,8 @@ router.get('/', async (req: Request, res: Response) => {
 
 // CREATE
 router.post('/', async (req: Request, res: Response) => {
+  const db = req.db;
+
   const periodId = req.decoded.period_id;
   const employeeId = req.decoded.employee_id;
   const leaveTypeId = req.body.leaveTypeId;
@@ -59,7 +61,8 @@ router.post('/', async (req: Request, res: Response) => {
       data.leave_days = leaveDays;
       data.remark = remark;
 
-      await leaveModel.create(req.db, data);
+      await leaveModel.create(db, data);
+
       res.send({ ok: true });
     } catch (e) {
       console.log(e);

@@ -27,6 +27,7 @@ router.get('/leaves', async (req: Request, res: Response) => {
 
     const rs: any = await leaveModel.managerRead(req.db, userId, employeeId, status, limit, offset);
     const rsTotal: any = await leaveModel.mamagerGetTotal(req.db, userId, employeeId, status);
+
     const total = rsTotal ? rsTotal[0].total : 0;
 
     res.send({ ok: true, rows: rs, total: total });
@@ -183,6 +184,24 @@ router.get('/employee/:employeeId/image', async (req: Request, res: Response) =>
     res.send({ ok: false, error: error.message, statusCode: 500 });
   }
 
+});
+
+router.post('/save-device-token', async (req: Request, res: Response) => {
+
+  const userId = req.decoded.user_id;
+  const deviceToken = req.body.deviceToken;
+
+  if (userId && deviceToken) {
+    try {
+      await userModel.updateDeviceToken(req.db, userId, deviceToken);
+      res.send({ ok: true });
+    } catch (e) {
+      console.log(e);
+      res.send({ ok: false, code: 500, error: 'เกิดข้อผิดพลาด' });
+    }
+  } else {
+    res.send({ ok: false, error: 'ข้อมูลไม่ครบ' });
+  }
 });
 
 export default router;
